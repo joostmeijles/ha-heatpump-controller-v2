@@ -40,6 +40,7 @@ class HeatpumpCoordinator:
 
         self._target_temperature: float = config.get("initial_target_temperature", 20.0)
         self._last_switch_time: Optional[datetime] = None
+        self._enabled: bool = True
 
         # Callbacks registered by platform entities to notify of coordinator updates
         self._listeners: list = []
@@ -47,6 +48,11 @@ class HeatpumpCoordinator:
     @property
     def target_temperature(self) -> float:
         return self._target_temperature
+
+    @property
+    def is_enabled(self) -> bool:
+        """Return True if automatic heatpump control is active."""
+        return self._enabled
 
     @property
     def weighted_average_temperature(self) -> Optional[float]:
@@ -172,8 +178,19 @@ class HeatpumpCoordinator:
                 blocking=False,
             )
 
+    async def async_set_enabled(self, enabled: bool) -> None:
+        """Enable or disable automatic control. When disabling, turns off the switch."""
+        self._enabled = enabled
+        if not enabled:
+            await self.hass.services.async_call(
+                "switch", "turn_off", {"entity_id": self._on_off_switch}, blocking=False
+            )
+        self._notify_listeners()
+
     async def _async_control_heatpump(self) -> None:
         """Evaluate conditions and switch heatpump on or off."""
+        if not self._enabled:
+            return
         avg_temp = self.weighted_average_temperature
         if avg_temp is None:
             _LOGGER.debug("No valid room temperatures available, skipping control")
