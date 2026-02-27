@@ -1,0 +1,17 @@
+# Example configuration for ha-heatpump-controller-v2
+# Add this to your Home Assistant configuration.yaml
+
+heatpump_controller:
+  on_off_switch: switch.heatpump_power       # Entity ID of the switch controlling the heatpump
+  initial_target_temperature: 20.5           # Initial target temperature in °C
+  hysteresis_on: 0.5                         # Turn ON when avg < target - this value
+  hysteresis_off: 0.5                        # Turn OFF when avg > target + this value
+  min_switch_interval: 3600                  # Minimum seconds between state changes (cooldown)
+  setpoint_delta: 2.0                        # Room setpoints kept at target + this delta
+  rooms:
+    - entity: climate.living_room            # Climate entity (reads current temp + sets setpoint)
+      weight: 1.5                            # Weight proportional to room size/importance
+    - entity: climate.bedroom
+      weight: 1.0
+    - entity: climate.kitchen
+      weight: 0.8

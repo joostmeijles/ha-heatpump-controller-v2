@@ -1,0 +1,10 @@
+{
+  "domain": "heatpump_controller",
+  "name": "Heatpump Controller",
+  "version": "0.1.0",
+  "iot_class": "local_polling",
+  "platforms": ["sensor", "binary_sensor", "climate"],
+  "requirements": [],
+  "codeowners": [],
+  "dependencies": []
+}
