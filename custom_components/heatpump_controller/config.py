@@ -27,5 +27,5 @@ CONFIG_SCHEMA = vol.Schema({
     vol.Optional(CONF_HYSTERESIS_OFF, default=0.5): vol.Coerce(float),
     vol.Optional(CONF_MIN_SWITCH_INTERVAL, default=3600): vol.Coerce(int),
     vol.Optional(CONF_SETPOINT_DELTA, default=2.0): vol.Coerce(float),
-    vol.Required(CONF_ROOMS): [ROOM_SCHEMA],
+    vol.Required(CONF_ROOMS): vol.All([ROOM_SCHEMA], vol.Length(min=1)),
 })
