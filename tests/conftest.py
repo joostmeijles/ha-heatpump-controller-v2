@@ -3,8 +3,11 @@
 import sys
 import os
 
-# Make custom_components importable from repo root
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+_tests_dir = os.path.dirname(__file__)
+# Stubs must come first so they shadow any installed homeassistant package
+sys.path.insert(0, os.path.join(_tests_dir, "stubs"))
+# Repo root so custom_components is importable
+sys.path.insert(0, os.path.join(_tests_dir, ".."))
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock
