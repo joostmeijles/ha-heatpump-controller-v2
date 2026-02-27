@@ -220,8 +220,11 @@ class HeatpumpCoordinator:
 
         else:
             _LOGGER.debug(
-                "No switch needed: avg=%.2f, target=%.2f, heatpump_on=%s",
-                avg_temp, target, is_on,
+                "No switch needed: avg=%.2f, on_threshold=%.2f, off_threshold=%.2f, heatpump_on=%s",
+                avg_temp,
+                target - self._hysteresis_on,
+                target + self._hysteresis_off,
+                is_on,
             )
 
     async def async_set_target_temperature(self, temperature: float) -> None:
