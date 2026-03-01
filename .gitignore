@@ -1,0 +1,28 @@
+# Home Assistant runtime files
+config/.storage/
+config/.cloud/
+config/home-assistant_v2.db
+config/home-assistant.log
+config/home-assistant.log.*
+config/*.db
+config/*.db-shm
+config/*.db-wal
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
