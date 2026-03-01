@@ -46,9 +46,11 @@ class HeatpumpControllerClimate(ClimateEntity, RestoreEntity):
         """Restore previous state and register coordinator listener."""
         await super().async_added_to_hass()
 
-        # Restore persisted target temperature
+        # Restore persisted state
         last_state = await self.async_get_last_state()
         if last_state is not None:
+            if last_state.state == HVACMode.OFF:
+                await self._coordinator.async_set_enabled(False)
             try:
                 restored_temp = float(last_state.attributes.get("temperature", self._coordinator.target_temperature))
                 _LOGGER.debug("Restoring target temperature: %.1f", restored_temp)
@@ -72,8 +74,7 @@ class HeatpumpControllerClimate(ClimateEntity, RestoreEntity):
 
     @property
     def hvac_mode(self) -> HVACMode:
-        is_on = self._coordinator.is_heatpump_on
-        return HVACMode.HEAT if is_on else HVACMode.OFF
+        return HVACMode.HEAT if self._coordinator.is_enabled else HVACMode.OFF
 
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
@@ -81,20 +82,12 @@ class HeatpumpControllerClimate(ClimateEntity, RestoreEntity):
             await self._coordinator.async_set_target_temperature(float(temperature))
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Map HVAC mode to heatpump switch directly."""
-        coordinator = self._coordinator
+        """Enable or disable the coordinator based on HVAC mode."""
         if hvac_mode == HVACMode.HEAT:
-            await coordinator.hass.services.async_call(
-                "switch", "turn_on",
-                {"entity_id": coordinator._on_off_switch},
-                blocking=True,
-            )
+            await self._coordinator.async_set_enabled(True)
+            await self._coordinator.async_evaluate()
         elif hvac_mode == HVACMode.OFF:
-            await coordinator.hass.services.async_call(
-                "switch", "turn_off",
-                {"entity_id": coordinator._on_off_switch},
-                blocking=True,
-            )
+            await self._coordinator.async_set_enabled(False)
 
     @property
     def extra_state_attributes(self) -> dict:

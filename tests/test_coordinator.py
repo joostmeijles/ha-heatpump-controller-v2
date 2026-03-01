@@ -146,6 +146,40 @@ class TestCooldown:
 
 
 # ---------------------------------------------------------------------------
+# is_enabled / async_set_enabled
+# ---------------------------------------------------------------------------
+
+
+class TestEnabled:
+    def test_is_enabled_defaults_to_true(self, coordinator):
+        assert coordinator.is_enabled is True
+
+    async def test_set_enabled_false_disables_and_turns_off_switch(self, coordinator):
+        await coordinator.async_set_enabled(False)
+        assert coordinator.is_enabled is False
+        coordinator.hass.services.async_call.assert_awaited_once_with(
+            "switch", "turn_off", {"entity_id": "switch.heatpump"}, blocking=False
+        )
+
+    async def test_set_enabled_true_enables_without_turning_off_switch(self, coordinator):
+        coordinator._enabled = False
+        await coordinator.async_set_enabled(True)
+        assert coordinator.is_enabled is True
+        coordinator.hass.services.async_call.assert_not_awaited()
+
+    async def test_control_heatpump_skipped_when_disabled(self):
+        states = {
+            "climate.living_room": make_state("heat", {"current_temperature": 19.0, "temperature": 22.0}),
+            "climate.bedroom": make_state("heat", {"current_temperature": 19.0, "temperature": 22.0}),
+            "switch.heatpump": make_state("off"),
+        }
+        coord = HeatpumpCoordinator(make_hass(states), BASE_CONFIG)
+        coord._enabled = False
+        await coord._async_control_heatpump()
+        coord.hass.services.async_call.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
 # _async_control_heatpump
 # ---------------------------------------------------------------------------
 
